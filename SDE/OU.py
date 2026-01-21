@@ -1,7 +1,7 @@
 import numpy as np
 
 class OU:
-    def __init__(self, S0, data, dt):
+    def __init__(self, data, dt):
         y = data[:-1]
         X = data[1:]
 

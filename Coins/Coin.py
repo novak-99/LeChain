@@ -8,7 +8,8 @@ import numpy as np
 from SDE.GBM import GBM
 from SDE.OU import OU
 
-from sklearn.linear_model import Ridge
+from EstimatorModel.RidgeModel import RidgeModel
+
 
 class Coin(ABC):
     def __init__(self, method="gbm", freq="hourly"):
@@ -34,16 +35,10 @@ class Coin(ABC):
 
     def handle_ou(self):
         r = np.log(self.data)
-        self.ou = OU(self.data[-1], r, self.dt)
+        self.ou = OU(r, self.dt)
 
     def handle_ridge(self):
-        self.ridge = Ridge(alpha=1.0)
-        self.W = 24
-
-        # rmr to make into Ridge object.
-        self.r = np.diff(np.log(self.data))
-        X, y = self.make_dataset(self.r, self.W)
-        self.ridge.fit(X, y)
+        self.ridge = RidgeModel(self.data)
 
     def download_hist(self):
         LOOKBACK = 86400 * 90  # := 90 days
@@ -90,24 +85,7 @@ class Coin(ABC):
         # NOTE : ADD HANDLE SIM FUNCTIONS, OR ADD RIDGE + ABSTRACT ML PIPELINE.
         if self.method == "gbm": return self.gbm.sim(T, self.freq_to_dt(freq))
         elif self.method == "ou": return self.ou.sim(T, self.freq_to_dt(freq)) 
-        elif self.method == "ridge": 
-            # seed -> last W returns
-            state = self.r[-self.W:].copy() # dc
-
-            path = []
-
-            S = self.data[-1]
-
-            for _ in range(T):
-                y_hat = float(self.ridge.predict(state.reshape(1, -1))[0])
-
-                S *= np.exp(y_hat)
-                path.append(S)
-
-                state = np.roll(state, -1) # move s0 to front to replace
-                state[-1] = y_hat
-                 
-            return path
+        elif self.method == "ridge": return self.ridge.sim(T)
 
     
     def freq_to_dt(self, freq):
@@ -130,12 +108,3 @@ class Coin(ABC):
     
     def to_iso_z(self, ts):
         return datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat().replace("+00:00", "Z")
-    
-    def make_dataset(self, r, W):
-        X, y = [], []
-
-        for i in range(W, len(r)):
-            X.append(r[i - W:i])
-            y.append(r[i])
-
-        return (np.array(X), np.array(y))
