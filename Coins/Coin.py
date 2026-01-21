@@ -10,20 +10,21 @@ from SDE.GBM import GBM
 class Coin(ABC):
     def download_hist(self):
         LOOKBACK = 86400 * 90  # := 90 days
+        CB_MAX = 300
 
         now = int(time.time())
         start_ts = now - LOOKBACK
         end_ts = now
 
-        gran = int(self.freq_to_gran(self.freq))
+        gran = self.freq_to_gran(self.freq)
 
         # BTC placeholder.
         # url = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
         headers = {"User-Agent": "LeChain/0.1"}
 
-        step = gran * 300
+        step = gran * CB_MAX
 
-        rows = []
+        data = []
         t = int(start_ts)
         while t < end_ts:
             t2 = min(t + step, end_ts)
@@ -37,11 +38,11 @@ class Coin(ABC):
             if resp.status_code != 200:
                 raise RuntimeError(f"Error while getting data for {self.__class__.__name__} {resp.status_code}: {resp.text[:300]}")
 
-            rows.extend(resp.json())
+            data.extend(resp.json())
             t = t2
 
         # rows := [time, low, high, open, close, volume]
-        df = pd.DataFrame(rows, columns=["ts", "low", "high", "open", "close", "volume"])
+        df = pd.DataFrame(data, columns=["ts", "low", "high", "open", "close", "volume"])
 
         df = df.drop_duplicates(subset=["ts"]).sort_values("ts").reset_index(drop=True)
 
