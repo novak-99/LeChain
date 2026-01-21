@@ -6,8 +6,34 @@ import pandas as pd
 
 import numpy as np
 from SDE.GBM import GBM
+from SDE.OU import OU
 
 class Coin(ABC):
+    def __init__(self, method="gbm", freq="hourly"):
+        self.freq = freq
+        self.method = method
+        self.download_hist()
+
+        if method == "gbm": self.handle_gbm()
+        elif method == "ou": self.handle_ou()
+
+    def handle_gbm(self):
+        r = np.diff(np.log(self.data))
+
+        self.r_hat = r.mean()
+        self.s = r.std()
+
+        self.dt = self.freq_to_dt(self.freq)
+        self.sigma = np.sqrt(self.s**2 / self.dt)
+        self.mu = self.r_hat / self.dt + 0.5 * self.sigma**2
+
+        self.gbm = GBM(self.data[-1], self.mu, self.sigma)
+
+    def handle_ou(self):
+        r = np.log(self.data)
+        self.dt = self.freq_to_dt(self.freq)
+        self.ou = OU(self.data[-1], r, self.dt)
+
     def download_hist(self):
         LOOKBACK = 86400 * 90  # := 90 days
         CB_MAX = 300
@@ -49,24 +75,10 @@ class Coin(ABC):
         # np array
         self.data = df["close"].astype(float).to_numpy()
 
-    def __init__(self, method="gbm", freq="hourly"):
-        self.freq = freq
-        self.download_hist()
-
-        r = np.diff(np.log(self.data))
-
-        self.r_hat = r.mean()
-        self.s = r.std()
-
-        self.dt = self.freq_to_dt(freq)
-        self.sigma = np.sqrt(self.s**2 / self.dt)
-        self.mu = self.r_hat / self.dt + 0.5 * self.sigma**2
-
-        self.gbm = GBM(self.data[-1], self.mu, self.sigma)
-
 
     def sim(self, T, freq):
-        return self.gbm.sim(T, self.freq_to_dt(freq))
+        if self.method == "gbm": return self.gbm.sim(T, self.freq_to_dt(freq))
+        elif self.method == "ou": return self.ou.sim(T, self.freq_to_dt(freq))
     
     def freq_to_dt(self, freq):
         dt = 1/365
