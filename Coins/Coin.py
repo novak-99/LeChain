@@ -35,7 +35,7 @@ class Coin(ABC):
 
             resp = requests.get(self.url, params=params, headers=headers, timeout=20)
             if resp.status_code != 200:
-                raise RuntimeError(f"Coinbase error {resp.status_code}: {resp.text[:300]}")
+                raise RuntimeError(f"Error while getting data for {self.__class__.__name__} {resp.status_code}: {resp.text[:300]}")
 
             rows.extend(resp.json())
             t = t2
