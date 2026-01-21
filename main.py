@@ -1,6 +1,7 @@
 from Coins.LTC import LTC
+from Coins.ETH import ETH
 
-coin = LTC(method="ann")
+coin = ETH(method="ann")
 
 # S = coin.sim(T=1000, freq="hourly")
 

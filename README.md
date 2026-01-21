@@ -1,6 +1,6 @@
 # LeChain
 
-SDE/ML solver package for cypto price estimation. Please see main.py for an example using LTC.
+SDE/ML solver package for cypto price estimation. Please see main.py for an example using ETH.
 
 ## Setup 
 
@@ -24,7 +24,7 @@ Choose a coin to simulate and specify a frequency and method (default is Geometr
 ```py
 from Coins.BTC import BTC # simulate BTC
 
-coin = BTC()
+coin = BTC(method="gbm", freq="hourly")
 
-S = coin.sim(T=1000, method="gbm", freq="hourly") # generate a path
+S = coin.sim(T=1000) # generate a path
 ```
