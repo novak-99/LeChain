@@ -1,9 +1,10 @@
 import numpy as np
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
+from EstimatorModels.EstimatorModel import EstimatorModel
 
-class RidgeModel:
+class LassoModel(EstimatorModel):
     def __init__(self, data, W = 24):
-        self.model = Ridge(alpha=1.0)
+        self.model = Lasso(alpha=1.0)
         self.W = W
 
         self.r = np.diff(np.log(data))
@@ -30,12 +31,3 @@ class RidgeModel:
             state[-1] = y_hat
             
         return path
-
-    def make_dataset(self, r, W):
-        X, y = [], []
-
-        for i in range(W, len(r)):
-            X.append(r[i - W:i])
-            y.append(r[i])
-
-        return (np.array(X), np.array(y))

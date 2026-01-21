@@ -8,7 +8,9 @@ import numpy as np
 from SDE.GBM import GBM
 from SDE.OU import OU
 
-from EstimatorModel.RidgeModel import RidgeModel
+from EstimatorModels.RidgeModel import RidgeModel
+from EstimatorModels.LassoModel import LassoModel
+from EstimatorModels.ANN import ANN
 
 
 class Coin(ABC):
@@ -21,6 +23,8 @@ class Coin(ABC):
         if method == "gbm": self.handle_gbm()
         elif method == "ou": self.handle_ou()
         elif method == "ridge": self.handle_ridge()
+        elif method == "lasso": self.handle_lasso()
+        elif method == "ann": self.handle_ann()
 
     def handle_gbm(self):
         r = np.diff(np.log(self.data))
@@ -39,6 +43,12 @@ class Coin(ABC):
 
     def handle_ridge(self):
         self.ridge = RidgeModel(self.data)
+
+    def handle_lasso(self):
+        self.lasso = LassoModel(self.data)
+
+    def handle_ann(self):
+        self.ann = ANN(self.data)
 
     def download_hist(self):
         LOOKBACK = 86400 * 90  # := 90 days
@@ -86,6 +96,8 @@ class Coin(ABC):
         if self.method == "gbm": return self.gbm.sim(T, self.freq_to_dt(freq))
         elif self.method == "ou": return self.ou.sim(T, self.freq_to_dt(freq)) 
         elif self.method == "ridge": return self.ridge.sim(T)
+        elif self.method == "lasso": return self.lasso.sim(T)
+        elif self.method == "ann": return self.ann.sim(T)
 
     
     def freq_to_dt(self, freq):

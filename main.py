@@ -1,6 +1,6 @@
 from Coins.LTC import LTC
 
-coin = LTC(method="ridge")
+coin = LTC(method="ann")
 
 # S = coin.sim(T=1000, freq="hourly")
 
