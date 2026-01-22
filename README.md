@@ -42,6 +42,7 @@ S = coin.sim(T=1000) # generate a path
 
 1. Geometric Brownian Motion
 2. Ornstein–Uhlenbeck
+3. Jump Diffusion
 
 #### Machine Learning Models
 
@@ -49,3 +50,5 @@ S = coin.sim(T=1000) # generate a path
 2. Ridge Regression
 3. Trees (XGBoost)
 4. Artifical Neural Network
+5. LSTM 
+6. Transformer

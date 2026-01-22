@@ -7,11 +7,14 @@ import pandas as pd
 import numpy as np
 from SDE.GBM import GBM
 from SDE.OU import OU
+from SDE.JD import JD
 
 from EstimatorModels.RidgeModel import RidgeModel
 from EstimatorModels.LassoModel import LassoModel
-from EstimatorModels.ANN import ANN
 from EstimatorModels.TreeModel import TreeModel
+from EstimatorModels.ANN import ANN
+from EstimatorModels.LSTM import LSTM
+from EstimatorModels.Transformer import Transformer
 
 
 class Coin(ABC):
@@ -23,10 +26,13 @@ class Coin(ABC):
 
         if method == "gbm": self.handle_gbm()
         elif method == "ou": self.handle_ou()
+        elif method == "jd": self.handle_jd()
         elif method == "ridge": self.handle_ridge()
         elif method == "lasso": self.handle_lasso()
-        elif method == "ann": self.handle_ann()
         elif method == "tree": self.handle_tree()
+        elif method == "ann": self.handle_ann()
+        elif method == "lstm": self.handle_lstm()
+        elif method == "transformer": self.handle_trans()
 
     def handle_gbm(self):
         r = np.diff(np.log(self.data))
@@ -43,17 +49,34 @@ class Coin(ABC):
         r = np.log(self.data)
         self.ou = OU(r, self.dt)
 
+    def handle_jd(self):
+        r = np.diff(np.log(self.data))
+
+        self.r_hat = r.mean()
+        self.s = r.std()
+
+        self.sigma = np.sqrt(self.s**2 / self.dt)
+        self.mu = self.r_hat / self.dt + 0.5 * self.sigma**2
+
+        self.jd = JD(self.data[-1], r, self.mu, self.sigma, self.dt)
+
     def handle_ridge(self):
         self.ridge = RidgeModel(self.data)
 
     def handle_lasso(self):
         self.lasso = LassoModel(self.data)
 
+    def handle_tree(self):
+        self.tree = TreeModel(self.data)
+
     def handle_ann(self):
         self.ann = ANN(self.data)
 
-    def handle_tree(self):
-        self.tree = TreeModel(self.data)
+    def handle_lstm(self):
+        self.lstm = LSTM(self.data)
+
+    def handle_trans(self):
+        self.trans = Transformer(self.data)
 
     def download_hist(self):
         LOOKBACK = 86400 * 90  # := 90 days
@@ -100,10 +123,13 @@ class Coin(ABC):
         # NOTE : ADD HANDLE SIM FUNCTIONS, OR ADD RIDGE + ABSTRACT ML PIPELINE.
         if self.method == "gbm": return self.gbm.sim(T, self.freq_to_dt(freq))
         elif self.method == "ou": return self.ou.sim(T, self.freq_to_dt(freq)) 
+        elif self.method == "jd": return self.jd.sim(T, self.freq_to_dt(freq)) 
         elif self.method == "ridge": return self.ridge.sim(T)
         elif self.method == "lasso": return self.lasso.sim(T)
-        elif self.method == "ann": return self.ann.sim(T)
         elif self.method == "tree": return self.tree.sim(T)
+        elif self.method == "ann": return self.ann.sim(T)
+        elif self.method == "lstm": return self.lstm.sim(T)
+        elif self.method == "transformer": return self.trans.sim(T)
 
     
     def freq_to_dt(self, freq):
