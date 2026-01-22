@@ -1,7 +1,7 @@
 from Coins.LTC import LTC
 from Coins.ETH import ETH
 
-coin = ETH(method="ann")
+coin = ETH(method="tree")
 
 # S = coin.sim(T=1000, freq="hourly")
 

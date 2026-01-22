@@ -11,6 +11,7 @@ from SDE.OU import OU
 from EstimatorModels.RidgeModel import RidgeModel
 from EstimatorModels.LassoModel import LassoModel
 from EstimatorModels.ANN import ANN
+from EstimatorModels.TreeModel import TreeModel
 
 
 class Coin(ABC):
@@ -25,6 +26,7 @@ class Coin(ABC):
         elif method == "ridge": self.handle_ridge()
         elif method == "lasso": self.handle_lasso()
         elif method == "ann": self.handle_ann()
+        elif method == "tree": self.handle_tree()
 
     def handle_gbm(self):
         r = np.diff(np.log(self.data))
@@ -49,6 +51,9 @@ class Coin(ABC):
 
     def handle_ann(self):
         self.ann = ANN(self.data)
+
+    def handle_tree(self):
+        self.tree = TreeModel(self.data)
 
     def download_hist(self):
         LOOKBACK = 86400 * 90  # := 90 days
@@ -98,6 +103,7 @@ class Coin(ABC):
         elif self.method == "ridge": return self.ridge.sim(T)
         elif self.method == "lasso": return self.lasso.sim(T)
         elif self.method == "ann": return self.ann.sim(T)
+        elif self.method == "tree": return self.tree.sim(T)
 
     
     def freq_to_dt(self, freq):

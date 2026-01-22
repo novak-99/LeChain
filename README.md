@@ -28,3 +28,24 @@ coin = BTC(method="gbm", freq="hourly")
 
 S = coin.sim(T=1000) # generate a path
 ```
+
+## Features 
+
+### Coins
+1. BTC
+2. LTC
+3. ETH
+
+### Models
+
+#### SDE Solvers
+
+1. Geometric Brownian Motion
+2. Ornstein–Uhlenbeck
+
+#### Machine Learning Models
+
+1. Lasso Regression
+2. Ridge Regression
+3. Trees (XGBoost)
+4. Artifical Neural Network
