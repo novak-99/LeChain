@@ -8,6 +8,7 @@ import numpy as np
 from SDE.GBM import GBM
 from SDE.OU import OU
 from SDE.JD import JD
+from SDE.Heston import Heston
 
 from EstimatorModels.RidgeModel import RidgeModel
 from EstimatorModels.LassoModel import LassoModel
@@ -27,12 +28,14 @@ class Coin(ABC):
         if method == "gbm": self.handle_gbm()
         elif method == "ou": self.handle_ou()
         elif method == "jd": self.handle_jd()
+        elif method == "heston": self.handle_heston()
         elif method == "ridge": self.handle_ridge()
         elif method == "lasso": self.handle_lasso()
         elif method == "tree": self.handle_tree()
         elif method == "ann": self.handle_ann()
         elif method == "lstm": self.handle_lstm()
         elif method == "transformer": self.handle_trans()
+        
 
     def handle_gbm(self):
         r = np.diff(np.log(self.data))
@@ -43,7 +46,7 @@ class Coin(ABC):
         self.sigma = np.sqrt(self.s**2 / self.dt)
         self.mu = self.r_hat / self.dt + 0.5 * self.sigma**2
 
-        self.gbm = GBM(self.data[-1], self.mu, self.sigma)
+        self.gbm = GBM(self.data[-1], self.mu, self.sigma, self.dt)
 
     def handle_ou(self):
         r = np.log(self.data)
@@ -59,6 +62,11 @@ class Coin(ABC):
         self.mu = self.r_hat / self.dt + 0.5 * self.sigma**2
 
         self.jd = JD(self.data[-1], r, self.mu, self.sigma, self.dt)
+
+    def handle_heston(self):
+        r = np.diff(np.log(self.data))
+
+        self.heston = Heston(self.data[-1], r, self.dt)
 
     def handle_ridge(self):
         self.ridge = RidgeModel(self.data)
@@ -119,11 +127,12 @@ class Coin(ABC):
         # np array
         self.data = df["close"].astype(float).to_numpy()
 
-    def sim(self, T, freq="hourly"):
+    def sim(self, T):
         # NOTE : ADD HANDLE SIM FUNCTIONS, OR ADD RIDGE + ABSTRACT ML PIPELINE.
-        if self.method == "gbm": return self.gbm.sim(T, self.freq_to_dt(freq))
-        elif self.method == "ou": return self.ou.sim(T, self.freq_to_dt(freq)) 
-        elif self.method == "jd": return self.jd.sim(T, self.freq_to_dt(freq)) 
+        if self.method == "gbm": return self.gbm.sim(T)
+        elif self.method == "ou": return self.ou.sim(T) 
+        elif self.method == "jd": return self.jd.sim(T) 
+        elif self.method == "heston": return self.heston.sim(T) 
         elif self.method == "ridge": return self.ridge.sim(T)
         elif self.method == "lasso": return self.lasso.sim(T)
         elif self.method == "tree": return self.tree.sim(T)

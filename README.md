@@ -43,6 +43,7 @@ S = coin.sim(T=1000) # generate a path
 1. Geometric Brownian Motion
 2. Ornstein–Uhlenbeck
 3. Jump Diffusion
+4. Heston
 
 #### Machine Learning Models
 
